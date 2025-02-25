@@ -14,3 +14,18 @@ export class RegisterUser{
     password:string
     
 }
+
+
+export class LoginUser{
+ 
+    @IsEmail()
+    @IsNotEmpty({message:"Email is Required"})
+    email :string 
+
+    @IsNotEmpty({message:"Password is Required"})
+    @MinLength(6,{
+        message:"Password should be grater than 6 characters"
+    })
+    password:string
+    
+}

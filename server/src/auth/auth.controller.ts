@@ -1,6 +1,7 @@
-import { Body, Controller,  Post } from '@nestjs/common';
-import { RegisterUser } from 'src/dto/auth.dto';
+import { Body, Controller,  Post,Get, UseGuards, Request } from '@nestjs/common';
+import { LoginUser, RegisterUser } from 'src/dto/auth.dto';
 import { AuthService } from './auth.service';
+import { AuthGuard } from './auth.guard';
 
 @Controller('/api/v1/auth')
 export class AuthController {
@@ -11,4 +12,18 @@ export class AuthController {
     const res_obj = await this.authService.registerUser(obj)
         return res_obj;
     }
+
+    
+    @Post('login')
+   async loginUser(@Body() obj:LoginUser){
+    const res_obj = await this.authService.loginUser(obj)
+        return res_obj;
+    }
+
+    @Get('profile')
+    @UseGuards(AuthGuard)
+    async userProfile(@Request() req){
+     const res_obj = await this.authService.userProfile(req.user)
+         return res_obj;
+     }
 }
