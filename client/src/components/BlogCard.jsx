@@ -1,28 +1,42 @@
-import React, { useId } from 'react'
+import React, { useEffect, useId, useState } from 'react'
 import { Link } from 'react-router'
+import {toast}from 'react-toastify'
+import { axiosClient } from '../utils/AxiosClient'
+const BlogCard = ({data}) => {
+  const [qoute,setQoute] = useState('')
+  const fetchQoutes = async()=>{
+    try {
+      const response = await axiosClient.get("/qoute/random")
+      const quote = response.data;
+      setQoute(quote)
+    } catch (error) {
+      toast.error(error.response.data.message || error.message)
+    }
+  }
+  useEffect(()=>{
+    fetchQoutes()
+  },[])
 
-const BlogCard = () => {
-  const id = useId()
+
+  const id = data.slug
   return (
     <>
         <Link to={'/blog/'+id} className="relative flex flex-col my-6 bg-white shadow-sm border border-slate-200 rounded-lg w-full">
   <div className="relative h-56 m-2.5 overflow-hidden text-white  object-center rounded-md">
-    <img src="https://images.unsplash.com/photo-1540553016722-983e48a2cd10?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&q=80" className='w-full h-full object-cover transition-all duration-300 hover:scale-125' alt="card-image" />
+    <img src={data.image} className='w-full h-full object-cover transition-all duration-300 hover:scale-125' alt="card-image" />
   </div>
   <div className="p-4">
-    <h6 className="mb-2 text-slate-800 text-xl font-semibold">
-      Website Review Check
+    <h6 className="mb-2 text-slate-800 text-xl font-semibold capitalize">
+      {data.title}
     </h6>
-    <p className="text-slate-600 leading-normal font-light">
-      The place is close to Barceloneta Beach and bus stop just 2 min by walk
-      and near to "Naviglio" where you can enjoy the main night life in
-      Barcelona.
+    <p id={qoute &&qoute.id} className="text-slate-600 leading-normal font-light">
+      {qoute && qoute.quote}
     </p>
   </div>
   <ul className="flex items-center gap-x-2 px-4 xl:px-4 flex-wrap">
     {
-      Array(5).fill(null).map((cur,i)=>{
-        return <li className='px-6 poppins-medium py-1 rounded-md border-tertiary border text-tertiary' key={i}>#{`Love`}</li>
+     data.tags && data.tags.length>0 && data.tags.map((cur,i)=>{
+        return <li className='px-6 poppins-medium py-1 rounded-md border-tertiary border text-tertiary' key={i}>#{cur}</li>
       })
     }
   </ul>

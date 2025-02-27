@@ -4,11 +4,15 @@ import {Formik,Form,ErrorMessage, Field} from 'formik'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import AuthButton from '../components/AuthButton'
 import {toast} from 'react-toastify'
-import {Link} from 'react-router'
+import {Link, useNavigate} from 'react-router'
+import { axiosClient } from '../utils/AxiosClient'
+import { useMainContext } from '../context/mainContext'
 const RegisterPage = () => {
 
     const [isHide,setIsHide] = useState(true)
     const [loading,setLoading] = useState(false)
+    const {fetchProfile} = useMainContext()
+    const navigate = useNavigate()
 
         const validationSchema = yup.object({
             name: yup.string().required('Name is required'),
@@ -23,11 +27,19 @@ const RegisterPage = () => {
         }
         const onSubmitHandler = async(values,helpers)=>{
             try {
+                setLoading(true)
+                const response = await axiosClient.post('/auth/register',values)
+                const data = await response.data
                  //logic
-                 toast.success("Register success")
+                 toast.success(data)
+                 localStorage.setItem("token",data.token)
                  helpers.resetForm()
+                 await fetchProfile()
+                 navigate("/")
             } catch (error) {
-                toast.error(error.message)
+                toast.error( error.response.data.message ||error.message)
+            }finally{
+                setLoading(false)
             }
         }
 

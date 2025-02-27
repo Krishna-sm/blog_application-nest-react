@@ -4,12 +4,15 @@ import {Formik,Form,ErrorMessage, Field} from 'formik'
 import { FaEye, FaEyeSlash } from 'react-icons/fa'
 import AuthButton from '../components/AuthButton'
 import {toast} from 'react-toastify'
-import {Link} from 'react-router'
+import {Link, useNavigate} from 'react-router'
+import { axiosClient } from '../utils/AxiosClient'
+import { useMainContext } from '../context/mainContext'
 const LoginPage = () => {
 
     const [isHide,setIsHide] = useState(true)
     const [loading,setLoading] = useState(false)
-
+    const {fetchProfile} = useMainContext()
+    const navigate = useNavigate()
         const validationSchema = yup.object({ 
             email: yup.string().email('Invalid email format').required('Email is required'),
             password: yup.string().min(6, 'Password should be at least 6 characters long').required('Password is required'),
@@ -21,11 +24,18 @@ const LoginPage = () => {
         }
         const onSubmitHandler = async(values,helpers)=>{
             try {
+                const response = await axiosClient.post('/auth/login',values)
+                const data = await response.data;
+                helpers.resetForm()
+                localStorage.setItem('token', data.token)
+                await fetchProfile()
+                toast.success(data.msg)
+                navigate('/')
+
                  //logic
-                 toast.success("Login success")
-                 helpers.resetForm()
             } catch (error) {
-                toast.error(error.message)
+                toast.error( error.response.data.message ||error.message)
+              
             }
         }
 

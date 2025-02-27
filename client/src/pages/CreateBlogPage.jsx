@@ -7,9 +7,10 @@ import AuthButton from '../components/AuthButton'
 import { useMainContext } from '../context/mainContext'
 import { useNavigate } from 'react-router'
 import Loader from '../components/Loader'
+import { axiosClient } from '../utils/AxiosClient'
 const CreateBlogPage = () => {
   const [loading,setLoading] = useState(false);
-  const {user} = useMainContext()
+  const {user,fetchAllBlogs} = useMainContext()
   const navigate = useNavigate()
   const [loader,setLoader] = useState(true)
 
@@ -26,14 +27,24 @@ const CreateBlogPage = () => {
     tags: yup.string().required('Tags are required'),
     image: yup.string().required('Image is required').url("Image should be a valid url"),
   })
-  const onSubmit = (values, {resetForm}) => {
+  const onSubmit = async(values, {resetForm}) => {
       try {
+        setLoading(true)
           // Your form submission logic goes here
-    console.log(values) 
-    toast.success("Blog created successfully")
+
+          const response = await axiosClient.post('/blog/add',values,{
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          })
+          const data =await response.data
+          await fetchAllBlogs()
+    toast.success(data.msg)
     resetForm()
       } catch (error) {
           toast.error(error.message)
+      }finally{
+        setLoading(false)
       }
   }
 
@@ -44,7 +55,7 @@ const CreateBlogPage = () => {
       setLoader(false)
     }
   },[])
-  if(setLoader){
+  if(loader){
     return <div className="min-h-[80vh] w-full flex items-center justify-center overflow-hidden">
       <Loader/>
     </div>
